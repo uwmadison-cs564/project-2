@@ -21,5 +21,4 @@ target_link_libraries(
         utilities
 )
 
-enable_testing()
 add_subdirectory(test)
