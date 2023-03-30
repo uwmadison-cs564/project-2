@@ -100,7 +100,9 @@ Clone the repository to your computer. If you're unfamiliar with GitHub, you can
 git clone URL
 ```
 
-Navigate into the project directory.
+Alternatively, if you plan to host your code on GitHub, fork the repository into your own **private** repository.
+
+Then, navigate into the project directory.
 
 ```bash
 cd project
