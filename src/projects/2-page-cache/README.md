@@ -16,7 +16,7 @@ To make things easier for you, we have written a C++ wrapper around SQLite's pag
 
 For each page replacement policy, you will implement the functions in `PageCache` that are marked `virtual`. The logic you should implement is as follows.
 
-#### Set the maximum number of pages in the cache
+### Set the maximum number of pages in the cache
 
 ```cpp
 void setMaxNumPages(int maxNumPages)
@@ -24,13 +24,13 @@ void setMaxNumPages(int maxNumPages)
 
 Discard unpinned pages until either the number of pages in the cache is less than or equal to `maxNumPages` or all the pages in the cache are pinned. If there are still too many pages after discarding all unpinned pages, pages will continue to be discarded after being unpinned in the `unpinPage` function.
 
-#### Get the number of pages in the cache, both pinned and unpinned
+### Get the number of pages in the cache, both pinned and unpinned
 
 ```cpp
 int getNumPages() const
 ```
 
-#### Fetch and pin a page
+### Fetch and pin a page
 
 ```cpp
 Page *fetchPage(unsigned pageId, bool allocate)
@@ -45,19 +45,24 @@ Page *fetchPage(unsigned pageId, bool allocate)
 			- If there is at least one unpinned page, return a pointer to an existing unpinned page as determined by the replacement policy.
 			- If all pages are pinned, return a null pointer.
 
-#### Unpin a page
+This function should be $O(1)$ or $O(\log n)$ with respect to the number of pages in the cache.
+
+### Unpin a page
 
 ```cpp
 void unpinPage(Page *page, bool discard)
 ```
 
 The page is unpinned regardless of the number of prior fetches, meaning it can be safely discarded.
+
 - If `discard` is true, then discard the page.
 - If `discard` is false, examine the number of pages in the cache.
 	- If the number of pages in the cache is greater than or equal to the maximum, discard the page.
 	- If the number of pages in the cache is less than the maximum, do not discard the page.
 
-#### Change the page ID associated with a page
+This function should be $O(1)$ or $O(\log n)$ with respect to the number of pages in the cache.
+
+### Change the page ID associated with a page
 
 ```cpp
 void changePageId(Page *page, unsigned newPageId)
@@ -65,7 +70,7 @@ void changePageId(Page *page, unsigned newPageId)
 
 If a page with page ID `newPageId` is already in the cache, it is assumed that the page is unpinned, and the page is discarded.
 
-#### Discard all pages with page IDs greater that or equal to a limit
+### Discard all pages with page IDs greater that or equal to a limit
 
 ```cpp
 void discardPages(unsigned pageIdLimit)
