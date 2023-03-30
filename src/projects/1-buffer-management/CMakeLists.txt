@@ -4,8 +4,8 @@ add_library(
         page_cache.hpp
         page_cache_lru.cpp
         page_cache_lru.hpp
-        page_cache_lru_k.cpp
-        page_cache_lru_k.hpp
+        page_cache_lru_2.cpp
+        page_cache_lru_2.hpp
         page_cache_random.cpp
         page_cache_random.hpp
 )

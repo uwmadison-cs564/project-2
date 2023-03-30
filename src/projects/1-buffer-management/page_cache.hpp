@@ -48,7 +48,7 @@ public:
   /**
    * Fetch and pin a page. If the page is already in the cache, return a
    * pointer to the page. If the page is not already in the cache, use the
-   * allocate parameter to determine how to proceed. If `allocate` is false,
+   * `allocate` parameter to determine how to proceed. If `allocate` is false,
    * return a null pointer. If `allocate` is true, examine the number of pages
    * in the cache. If the number of pages in the cache is less than the maximum,
    * allocate and return a pointer to a new page. If the number of pages in the
@@ -63,10 +63,10 @@ public:
 
   /**
    * Unpin a page. The page is unpinned regardless of the number of prior
-   * fetches, meaning it can be safely discarded. If discard is true, discard
-   * the page. If discard is false, examine the number of pages in the cache. If
-   * the number of pages in the cache is greater than the maximum, discard the
-   * page.
+   * fetches, meaning it can be safely discarded. If `discard` is true, discard
+   * the page. If `discard` is false, examine the number of pages in the cache.
+   * If the number of pages in the cache is greater than the maximum, discard
+   * the page.
    * @param page Pointer to a page.
    * @param discard Discard the page.
    */

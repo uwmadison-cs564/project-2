@@ -1,7 +1,7 @@
-#include "page_cache_lru_k.hpp"
+#include "page_cache_lru_2.hpp"
 #include "test_page_cache_common.hpp"
 
 int main() {
-  commonAll<LRUKReplacementPageCache>();
+  commonAll<LRU2ReplacementPageCache>();
   return TEST_EXIT_CODE;
 }

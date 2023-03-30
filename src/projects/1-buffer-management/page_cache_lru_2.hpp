@@ -1,11 +1,11 @@
-#ifndef CS564_PROJECT_PAGE_CACHE_LRU_K_HPP
-#define CS564_PROJECT_PAGE_CACHE_LRU_K_HPP
+#ifndef CS564_PROJECT_PAGE_CACHE_LRU_2_HPP
+#define CS564_PROJECT_PAGE_CACHE_LRU_2_HPP
 
 #include "page_cache.hpp"
 
-class LRUKReplacementPageCache : public PageCache {
+class LRU2ReplacementPageCache : public PageCache {
 public:
-  LRUKReplacementPageCache(int pageSize, int extraSize);
+  LRU2ReplacementPageCache(int pageSize, int extraSize);
 
   void setMaxNumPages(int maxNumPages) override;
 
@@ -23,4 +23,4 @@ private:
   // TODO: Declare class members as needed.
 };
 
-#endif // CS564_PROJECT_PAGE_CACHE_LRU_K_HPP
+#endif // CS564_PROJECT_PAGE_CACHE_LRU_2_HPP
