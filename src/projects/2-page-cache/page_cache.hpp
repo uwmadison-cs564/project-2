@@ -3,8 +3,6 @@
 
 #include "dependencies/sqlite/sqlite3.h"
 
-#include <memory>
-
 class Page : sqlite3_pcache_page {
 public:
   /**
