@@ -100,7 +100,7 @@ Clone the repository to your computer. If you're unfamiliar with GitHub, you can
 git clone URL
 ```
 
-Alternatively, if you plan to host your code on GitHub, fork the repository into your own **private** repository.
+Alternatively, if you plan to host your code on GitHub, you'll need to duplicate the repository into your own **private** repository. To do so, follow these [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/duplicating-a-repository).
 
 Then, navigate into the project directory.
 
