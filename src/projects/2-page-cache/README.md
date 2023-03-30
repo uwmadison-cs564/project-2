@@ -45,7 +45,7 @@ Page *fetchPage(unsigned pageId, bool allocate)
 			- If there is at least one unpinned page, return a pointer to an existing unpinned page as determined by the replacement policy.
 			- If all pages are pinned, return a null pointer.
 
-This function should be $O(1)$ or $O(\log n)$ with respect to the number of pages in the cache.
+Increment `numFetches_`, and if the fetch was a hit, increment `numHits_`. This function should be $O(1)$ or $O(\log n)$ with respect to the number of pages in the cache.
 
 ### Unpin a page
 
