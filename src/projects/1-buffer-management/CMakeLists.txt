@@ -1,31 +1,25 @@
 add_library(
         page_cache
-        page_cache.hpp
         page_cache.cpp
-        page_cache_adapter.hpp
-        page_cache_adapter.cpp
+        page_cache.hpp
+        page_cache_lru.cpp
+        page_cache_lru.hpp
+        page_cache_lru_k.cpp
+        page_cache_lru_k.hpp
+        page_cache_random.cpp
+        page_cache_random.hpp
 )
+
 target_include_directories(
         page_cache
         PRIVATE
         ../..
 )
+
 target_link_libraries(
         page_cache
         utilities
 )
 
-add_executable(
-        test_page_cache
-        test/test_page_cache.cpp
-)
-target_include_directories(
-        test_page_cache
-        PRIVATE
-        ../..
-)
-target_link_libraries(
-        test_page_cache
-        page_cache
-        sqlite
-)
+enable_testing()
+add_subdirectory(test)

@@ -1,5 +1,5 @@
-#ifndef SQLITE_EDU_EXCEPTIONS_HPP
-#define SQLITE_EDU_EXCEPTIONS_HPP
+#ifndef CS564_PROJECT_EXCEPTION_HPP
+#define CS564_PROJECT_EXCEPTION_HPP
 
 #include <stdexcept>
 #include <string>
@@ -9,4 +9,4 @@ public:
   explicit NotImplementedException(const std::string &what);
 };
 
-#endif // SQLITE_EDU_EXCEPTIONS_HPP
+#endif // CS564_PROJECT_EXCEPTION_HPP

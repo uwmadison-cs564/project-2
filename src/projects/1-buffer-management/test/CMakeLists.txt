@@ -1,0 +1,10 @@
+macro(buffer_management_test test_name)
+    add_executable(${test_name} ${test_name}.cpp)
+    target_link_libraries(${test_name} page_cache)
+    target_include_directories(${test_name} PRIVATE .. ../../..)
+    add_test(${test_name} ${test_name})
+endmacro()
+
+buffer_management_test(test_page_cache_lru)
+buffer_management_test(test_page_cache_lru_k)
+buffer_management_test(test_page_cache_random)

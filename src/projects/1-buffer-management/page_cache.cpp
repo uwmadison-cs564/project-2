@@ -1,18 +1,10 @@
 #include "page_cache.hpp"
-#include "utilities/exceptions.hpp"
 
-void RequestLog::logRequest(unsigned key, bool hit) {
-  requests_.emplace_back(key, hit);
-}
+#include <memory>
 
-const std::vector<std::pair<unsigned, bool>> &RequestLog::getRequests() const {
-  return requests_;
-}
-
-Page::Page(int pageSize, int extraSize, unsigned key) : sqlite3_pcache_page() {
+Page::Page(int pageSize, int extraSize) : sqlite3_pcache_page() {
   pBuf = std::aligned_alloc(8, pageSize);
-  pExtra = std::aligned_alloc(8, extraSize);
-  key_ = key;
+  pExtra = malloc(extraSize);
 }
 
 Page::~Page() {
@@ -20,31 +12,6 @@ Page::~Page() {
   free(pExtra);
 }
 
-unsigned Page::getKey() const { return key_; }
-
-PageCache::PageCache(int pageSize, int extraSize) {}
-
-int PageCache::getPageCount() const {
-  // TODO: Implement.
-  throw NotImplementedException("getPageCount not implemented");
-}
-
-Page *PageCache::request(unsigned key, bool allocate) {
-  // TODO: Implement.
-  throw NotImplementedException("request not implemented");
-}
-
-void PageCache::release(Page *page, bool discard) {
-  // TODO: Implement.
-  throw NotImplementedException("release not implemented");
-}
-
-void PageCache::rekey(Page *page, unsigned newKey) {
-  // TODO: Implement.
-  throw NotImplementedException("rekey not implemented");
-}
-
-void PageCache::truncate(unsigned limit) {
-  // TODO: Implement.
-  throw NotImplementedException("truncate not implemented");
-}
+PageCache::PageCache(int pageSize, int extraSize)
+    : pageSize_(pageSize), extraSize_(extraSize), maxNumPages_(0),
+      numFetches_(0), numHits_(0) {}

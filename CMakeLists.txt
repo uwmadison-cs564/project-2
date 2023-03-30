@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 3.11)
-project(sqlite_edu)
+project(cs564_project)
 
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(
         utilities
-        src/utilities/exceptions.hpp
-        src/utilities/exceptions.cpp
+        src/utilities/exception.cpp
+        src/utilities/exception.hpp
+        src/utilities/test.hpp
 )
 
 add_library(
         sqlite
-        src/dependencies/sqlite/sqlite3.h
         src/dependencies/sqlite/sqlite3.c
+        src/dependencies/sqlite/sqlite3.h
 )
 
 add_subdirectory(src/projects/1-buffer-management)
