@@ -18,4 +18,4 @@ add_library(
         src/dependencies/sqlite/sqlite3.h
 )
 
-add_subdirectory(src/projects/1-buffer-management)
+add_subdirectory(src/projects/2-page-cache)
