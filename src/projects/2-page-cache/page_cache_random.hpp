@@ -10,7 +10,7 @@ class RandomReplacementPageCache : public PageCache {
 public:
   RandomReplacementPageCache(int pageSize, int extraSize);
 
-  ~RandomReplacementPageCache();
+  ~RandomReplacementPageCache() override;
 
   void setMaxNumPages(int maxNumPages) override;
 

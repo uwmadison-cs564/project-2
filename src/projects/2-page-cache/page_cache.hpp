@@ -30,6 +30,11 @@ public:
   PageCache(int pageSize, int extraSize);
 
   /**
+   * Destroy the PageCache.
+   */
+  virtual ~PageCache() = default;
+
+  /**
    * Set the maximum number of pages in the cache. Discard unpinned pages until
    * either the number of pages in the cache is less than or equal to
    * `maxNumPages` or all the pages in the cache are pinned. If there are still
@@ -152,7 +157,10 @@ struct PageCacheMethods : sqlite3_pcache_methods2 {
       pageCache->discardPages(pageIdLimit);
     };
 
-    xDestroy = [](sqlite3_pcache *pageCacheBase) { free(pageCacheBase); };
+    xDestroy = [](sqlite3_pcache *pageCacheBase) {
+      auto pageCache = (PageCache *)pageCacheBase;
+      delete pageCache;
+    };
   }
 };
 
