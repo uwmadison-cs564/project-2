@@ -1,14 +1,16 @@
 #include "page_cache.hpp"
 
+#include <cstdint>
 #include <cstdlib>
 
 Page::Page(int pageSize, int extraSize) : sqlite3_pcache_page() {
-  pBuf = std::aligned_alloc(8, pageSize);
+  pBufInner_ = malloc(pageSize + 15);
+  pBuf = (void *)(((uintptr_t)pBufInner_ + 15) & ~(uintptr_t)0xF);
   pExtra = malloc(extraSize);
 }
 
 Page::~Page() {
-  free(pBuf);
+  free(pBufInner_);
   free(pExtra);
 }
 

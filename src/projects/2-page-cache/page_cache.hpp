@@ -16,6 +16,9 @@ public:
   Page &operator=(const Page &) = delete;
 
   ~Page();
+
+private:
+  void *pBufInner_;
 };
 
 class PageCache {
