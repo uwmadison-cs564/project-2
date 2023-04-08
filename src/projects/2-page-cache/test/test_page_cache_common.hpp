@@ -1,8 +1,11 @@
 #ifndef CS564_PROJECT_TEST_PAGE_CACHE_COMMON_HPP
 #define CS564_PROJECT_TEST_PAGE_CACHE_COMMON_HPP
 
+#include "dependencies/sqlite/sqlite3.hpp"
 #include "page_cache.hpp"
 #include "utilities/test.hpp"
+
+#include <iostream>
 
 template <typename T> void commonNumPages() {
   T pageCache(4096, 8);
@@ -82,6 +85,56 @@ template <typename T> void commonDiscardPages() {
   TEST_ASSERT(pageCache.getNumHits() == 1, "incorrect number of hits");
 }
 
+void loadSQLiteTable() {
+  sqlite::Database db("test.sqlite");
+  sqlite::Connection conn;
+
+  db.connect(conn).expect(SQLITE_OK);
+
+  conn.execute("DROP TABLE IF EXISTS T");
+
+  conn.execute("CREATE TABLE T (a INTEGER PRIMARY KEY, b INTEGER)")
+      .expect(SQLITE_OK);
+
+  conn.begin().expect(SQLITE_OK);
+
+  for (int i = 0; i < 10000; ++i) {
+    conn.execute("INSERT INTO T VALUES (" + std::to_string(i) + ", " +
+                 std::to_string(i) + ")")
+        .expect(SQLITE_OK);
+  }
+
+  conn.commit().expect(SQLITE_OK);
+}
+
+template <typename T> void commonSQLite1() {
+  static T *pageCache;
+
+  PageCacheMethods<T> pageCacheMethods;
+  pageCacheMethods.xCreate = [](int pageSize, int extraSize, int) {
+    pageCache = new T(pageSize, extraSize);
+    return (sqlite3_pcache *)pageCache;
+  };
+
+  sqlite::shutdown().expect(SQLITE_OK);
+  sqlite::config(SQLITE_CONFIG_PCACHE2, &pageCacheMethods).expect(SQLITE_OK);
+  sqlite::initialize().expect(SQLITE_OK);
+
+  sqlite::Database db("test.sqlite");
+  sqlite::Connection conn;
+
+  db.connect(conn).expect(SQLITE_OK);
+
+  conn.execute("PRAGMA cache_size=100");
+
+  for (int i = 0; i < 10; ++i) {
+    conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
+  }
+
+  std::cout << pageCache->getNumFetches() << std::endl;
+  std::cout << pageCache->getNumHits() << std::endl;
+}
+
 template <typename T> void commonAll() {
   TEST_RUN(commonFetchMiss<T>);
   TEST_RUN(commonFetchTwice<T>);
@@ -90,6 +143,10 @@ template <typename T> void commonAll() {
   TEST_RUN(commonChangePageId<T>);
   TEST_RUN(commonDiscardPages<T>);
   TEST_RUN(commonNumPages<T>);
+
+  loadSQLiteTable();
+
+  TEST_RUN(commonSQLite1<T>);
 }
 
 #endif // CS564_PROJECT_TEST_PAGE_CACHE_COMMON_HPP

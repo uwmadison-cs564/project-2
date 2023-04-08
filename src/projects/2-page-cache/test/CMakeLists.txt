@@ -1,6 +1,6 @@
 macro(buffer_management_test test_name)
     add_executable(${test_name} ${test_name}.cpp)
-    target_link_libraries(${test_name} page_cache)
+    target_link_libraries(${test_name} page_cache sqlite)
     target_include_directories(${test_name} PRIVATE .. ../../..)
     add_test(${test_name} ${test_name})
 endmacro()

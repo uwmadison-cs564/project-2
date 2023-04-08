@@ -16,6 +16,7 @@ add_library(
         sqlite
         src/dependencies/sqlite/sqlite3.c
         src/dependencies/sqlite/sqlite3.h
+        src/dependencies/sqlite/sqlite3.hpp
 )
 
 add_subdirectory(src/projects/2-page-cache)
