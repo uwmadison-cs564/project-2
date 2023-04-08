@@ -6,6 +6,7 @@
 #include <array>
 #include <cstdarg>
 #include <exception>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
