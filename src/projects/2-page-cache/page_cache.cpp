@@ -17,3 +17,7 @@ Page::~Page() {
 PageCache::PageCache(int pageSize, int extraSize)
     : pageSize_(pageSize), extraSize_(extraSize), maxNumPages_(0),
       numFetches_(0), numHits_(0) {}
+
+unsigned long long PageCache::getNumFetches() const { return numFetches_; }
+
+unsigned long long PageCache::getNumHits() const { return numHits_; }

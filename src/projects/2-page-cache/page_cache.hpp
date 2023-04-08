@@ -95,6 +95,18 @@ public:
    */
   virtual void discardPages(unsigned pageIdLimit) = 0;
 
+  /**
+   * Get the number of fetches since creation.
+   * @return Number of fetches since creation.
+   */
+  [[nodiscard]] unsigned long long getNumFetches() const;
+
+  /**
+   * Get the number of hits since creation.
+   * @return Number of hits since creation.
+   */
+  [[nodiscard]] unsigned long long getNumHits() const;
+
 protected:
   /** Maximum number of pages in the cache. */
   int maxNumPages_;
