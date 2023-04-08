@@ -5,7 +5,9 @@
 #include "page_cache.hpp"
 #include "utilities/test.hpp"
 
-#include <iostream>
+#include <random>
+
+static int numRows = 10000;
 
 template <typename T> void commonNumPages() {
   T pageCache(4096, 8);
@@ -85,7 +87,7 @@ template <typename T> void commonDiscardPages() {
   TEST_ASSERT(pageCache.getNumHits() == 1, "incorrect number of hits");
 }
 
-void loadSQLiteTable() {
+void loadSQLiteDatabase() {
   sqlite::Database db("test.sqlite");
   sqlite::Connection conn;
 
@@ -98,7 +100,7 @@ void loadSQLiteTable() {
 
   conn.begin().expect(SQLITE_OK);
 
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < numRows; ++i) {
     conn.execute("INSERT INTO T VALUES (" + std::to_string(i) + ", " +
                  std::to_string(i) + ")")
         .expect(SQLITE_OK);
@@ -107,7 +109,9 @@ void loadSQLiteTable() {
   conn.commit().expect(SQLITE_OK);
 }
 
-template <typename T> void commonSQLite1() {
+template <typename T, typename F>
+void commonSQLRun(F &&f, unsigned long long &numFetches,
+                  unsigned long long &numHits) {
   static T *pageCache;
 
   PageCacheMethods<T> pageCacheMethods;
@@ -125,14 +129,69 @@ template <typename T> void commonSQLite1() {
 
   db.connect(conn).expect(SQLITE_OK);
 
-  conn.execute("PRAGMA cache_size=100");
+  conn.execute("PRAGMA cache_size=10");
 
-  for (int i = 0; i < 10; ++i) {
-    conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
-  }
+  f(conn);
 
-  std::cout << pageCache->getNumFetches() << std::endl;
-  std::cout << pageCache->getNumHits() << std::endl;
+  numFetches = pageCache->getNumFetches();
+  numHits = pageCache->getNumHits();
+}
+
+template <typename T>
+void commonSQLScan(unsigned long long &numFetches,
+                   unsigned long long &numHits) {
+  commonSQLRun<T>(
+      [&](sqlite::Connection &conn) {
+        for (int i = 0; i < 10; ++i) {
+          conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
+        }
+      },
+      numFetches, numHits);
+}
+
+template <typename T>
+void commonSQLScanWithHotSet(unsigned long long &numFetches,
+                             unsigned long long &numHits) {
+  commonSQLRun<T>(
+      [&](sqlite::Connection &conn) {
+        for (int i = 0; i < 10; ++i) {
+          conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
+          conn.execute("SELECT SUM(b) FROM T WHERE a < 3000").expect(SQLITE_OK);
+        }
+      },
+      numFetches, numHits);
+}
+
+template <typename T>
+void commonSQLUniformRandom(unsigned long long &numFetches,
+                            unsigned long long &numHits) {
+  std::minstd_rand rng(0); // NOLINT(cert-msc51-cpp)
+  std::uniform_int_distribution<int> dis(0, numRows - 1);
+
+  commonSQLRun<T>(
+      [&](sqlite::Connection &conn) {
+        for (int i = 0; i < 100; ++i) {
+          conn.execute("SELECT b FROM T WHERE a = " + std::to_string(dis(rng)))
+              .expect(SQLITE_OK);
+        }
+      },
+      numFetches, numHits);
+}
+
+template <typename T>
+void commonSQLBinomialRandom(unsigned long long &numFetches,
+                             unsigned long long &numHits) {
+  std::minstd_rand rng(0); // NOLINT(cert-msc51-cpp)
+  std::binomial_distribution<int> dis(numRows - 1, 0.9);
+
+  commonSQLRun<T>(
+      [&](sqlite::Connection &conn) {
+        for (int i = 0; i < 100; ++i) {
+          conn.execute("SELECT b FROM T WHERE a = " + std::to_string(dis(rng)))
+              .expect(SQLITE_OK);
+        }
+      },
+      numFetches, numHits);
 }
 
 template <typename T> void commonAll() {
@@ -143,10 +202,6 @@ template <typename T> void commonAll() {
   TEST_RUN(commonChangePageId<T>);
   TEST_RUN(commonDiscardPages<T>);
   TEST_RUN(commonNumPages<T>);
-
-  loadSQLiteTable();
-
-  TEST_RUN(commonSQLite1<T>);
 }
 
 #endif // CS564_PROJECT_TEST_PAGE_CACHE_COMMON_HPP

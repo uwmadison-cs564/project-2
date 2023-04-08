@@ -70,11 +70,52 @@ void lruReplacement4() {
   TEST_ASSERT(pageCache.getNumHits() == 2, "incorrect number of hits");
 }
 
+void lruReplacementSQLScan() {
+  unsigned long long numFetches;
+  unsigned long long numHits;
+  commonSQLScan<LRUReplacementPageCache>(numFetches, numHits);
+  TEST_ASSERT(numFetches == 272, "incorrect number of fetches");
+  TEST_ASSERT(numHits == 20, "incorrect number of hits");
+}
+
+void lruReplacementSQLScanWithHotSet() {
+  unsigned long long numFetches;
+  unsigned long long numHits;
+  commonSQLScanWithHotSet<LRUReplacementPageCache>(numFetches, numHits);
+  TEST_ASSERT(numFetches == 341, "incorrect number of fetches");
+  TEST_ASSERT(numHits == 83, "incorrect number of hits");
+}
+
+void lruReplacementSQLUniformRandom() {
+  unsigned long long numFetches;
+  unsigned long long numHits;
+  commonSQLUniformRandom<LRUReplacementPageCache>(numFetches, numHits);
+  TEST_ASSERT(numFetches == 302, "incorrect number of fetches");
+  TEST_ASSERT(numHits == 225, "incorrect number of hits");
+}
+
+void lruReplacementSQLBinomialRandom() {
+  unsigned long long numFetches;
+  unsigned long long numHits;
+  commonSQLBinomialRandom<LRUReplacementPageCache>(numFetches, numHits);
+  TEST_ASSERT(numFetches == 302, "incorrect number of fetches");
+  TEST_ASSERT(numHits == 298, "incorrect number of hits");
+}
+
 int main() {
   commonAll<LRUReplacementPageCache>();
+
   TEST_RUN(lruReplacement1);
   TEST_RUN(lruReplacement2);
   TEST_RUN(lruReplacement3);
   TEST_RUN(lruReplacement4);
+
+  loadSQLiteDatabase();
+
+  TEST_RUN(lruReplacementSQLScan);
+  TEST_RUN(lruReplacementSQLScanWithHotSet);
+  TEST_RUN(lruReplacementSQLUniformRandom);
+  TEST_RUN(lruReplacementSQLBinomialRandom);
+
   return TEST_EXIT_CODE;
 }
