@@ -4,9 +4,9 @@
 #include <cstdlib>
 
 Page::Page(int pageSize, int extraSize) : sqlite3_pcache_page() {
-  pBufInner_ = malloc(pageSize + 7);
+  pBufInner_ = calloc(pageSize + 7, 1);
   pBuf = (void *)(((uintptr_t)pBufInner_ + 7) & ~(uintptr_t)0x3);
-  pExtra = malloc(extraSize);
+  pExtra = calloc(extraSize, 1);
 }
 
 Page::~Page() {
