@@ -24,8 +24,6 @@ template <typename T> void commonFetchMiss() {
   pageCache.setMaxNumPages(1);
   Page *page1 = pageCache.fetchPage(1, false);
   TEST_ASSERT(page1 == nullptr, "expected null pointer");
-  TEST_ASSERT(pageCache.getNumFetches() == 1, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 0, "incorrect number of hits");
 }
 
 template <typename T> void commonFetchTwice() {
@@ -34,8 +32,6 @@ template <typename T> void commonFetchTwice() {
   Page *page1 = pageCache.fetchPage(1, true);
   Page *page2 = pageCache.fetchPage(1, true);
   TEST_ASSERT(page1 == page2, "page pointers are not equal");
-  TEST_ASSERT(pageCache.getNumFetches() == 2, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 1, "incorrect number of hits");
 }
 
 template <typename T> void commonFetchFull() {
@@ -45,8 +41,6 @@ template <typename T> void commonFetchFull() {
   pageCache.unpinPage(page1, false);
   Page *page2 = pageCache.fetchPage(2, true);
   TEST_ASSERT(page2 != nullptr, "expected valid pointer");
-  TEST_ASSERT(pageCache.getNumFetches() == 2, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 0, "incorrect number of hits");
 }
 
 template <typename T> void commonFetchPinnedFull() {
@@ -55,8 +49,6 @@ template <typename T> void commonFetchPinnedFull() {
   pageCache.fetchPage(1, true);
   Page *page2 = pageCache.fetchPage(2, true);
   TEST_ASSERT(page2 == nullptr, "expected null pointer");
-  TEST_ASSERT(pageCache.getNumFetches() == 2, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 0, "incorrect number of hits");
 }
 
 template <typename T> void commonChangePageId() {
@@ -69,8 +61,6 @@ template <typename T> void commonChangePageId() {
   TEST_ASSERT(page1 == page2, "expected equivalent pointers");
   page1 = pageCache.fetchPage(1, false);
   TEST_ASSERT(page1 == nullptr, "expected null pointer");
-  TEST_ASSERT(pageCache.getNumFetches() == 3, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 1, "incorrect number of hits");
 }
 
 template <typename T> void commonDiscardPages() {
@@ -83,12 +73,10 @@ template <typename T> void commonDiscardPages() {
   TEST_ASSERT(page1 != nullptr, "expected valid pointer");
   Page *page2 = pageCache.fetchPage(2, false);
   TEST_ASSERT(page2 == nullptr, "expected null pointer");
-  TEST_ASSERT(pageCache.getNumFetches() == 4, "incorrect number of fetches");
-  TEST_ASSERT(pageCache.getNumHits() == 1, "incorrect number of hits");
 }
 
-void loadSQLiteDatabase() {
-  sqlite::Database db("test.sqlite");
+void loadSQLiteDatabase(const char *name) {
+  sqlite::Database db(name);
   sqlite::Connection conn;
 
   db.connect(conn).expect(SQLITE_OK);
@@ -110,21 +98,15 @@ void loadSQLiteDatabase() {
 }
 
 template <typename T, typename F>
-void commonSQLRun(F &&f, unsigned long long &numFetches,
-                  unsigned long long &numHits) {
+void commonSQLRun(const char *databaseName, F &&f, int &numHits) {
   static T *pageCache;
 
   PageCacheMethods<T> pageCacheMethods;
-  pageCacheMethods.xCreate = [](int pageSize, int extraSize, int) {
-    pageCache = new T(pageSize, extraSize);
-    return (sqlite3_pcache *)pageCache;
-  };
-
   sqlite::shutdown().expect(SQLITE_OK);
   sqlite::config(SQLITE_CONFIG_PCACHE2, &pageCacheMethods).expect(SQLITE_OK);
   sqlite::initialize().expect(SQLITE_OK);
 
-  sqlite::Database db("test.sqlite");
+  sqlite::Database db(databaseName);
   sqlite::Connection conn;
 
   db.connect(conn).expect(SQLITE_OK);
@@ -133,65 +115,66 @@ void commonSQLRun(F &&f, unsigned long long &numFetches,
 
   f(conn);
 
-  numFetches = pageCache->getNumFetches();
-  numHits = pageCache->getNumHits();
+  int numHitsHighWater;
+  sqlite3_db_status(conn.ptr().get(), SQLITE_DBSTATUS_CACHE_HIT, &numHits,
+                    &numHitsHighWater, 0);
 }
 
 template <typename T>
-void commonSQLScan(unsigned long long &numFetches,
-                   unsigned long long &numHits) {
+void commonSQLScan(const char *databaseName, int &numHits) {
   commonSQLRun<T>(
+      databaseName,
       [&](sqlite::Connection &conn) {
         for (int i = 0; i < 10; ++i) {
           conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
         }
       },
-      numFetches, numHits);
+      numHits);
 }
 
 template <typename T>
-void commonSQLScanWithHotSet(unsigned long long &numFetches,
-                             unsigned long long &numHits) {
+void commonSQLScanWithHotSet(const char *databaseName, int &numHits) {
   commonSQLRun<T>(
+      databaseName,
       [&](sqlite::Connection &conn) {
         for (int i = 0; i < 10; ++i) {
           conn.execute("SELECT SUM(b) FROM T").expect(SQLITE_OK);
           conn.execute("SELECT SUM(b) FROM T WHERE a < 3000").expect(SQLITE_OK);
         }
       },
-      numFetches, numHits);
+      numHits);
 }
 
 template <typename T>
-void commonSQLUniformRandom(unsigned long long &numFetches,
-                            unsigned long long &numHits) {
+void commonSQLUniformRandom(const char *databaseName, int &numHits) {
   std::minstd_rand rng(0); // NOLINT(cert-msc51-cpp)
   std::uniform_int_distribution<int> dis(0, numRows - 1);
 
   commonSQLRun<T>(
+      databaseName,
       [&](sqlite::Connection &conn) {
         for (int i = 0; i < 100; ++i) {
           conn.execute("SELECT b FROM T WHERE a = " + std::to_string(dis(rng)))
               .expect(SQLITE_OK);
         }
       },
-      numFetches, numHits);
+      numHits);
 }
 
 template <typename T>
-void commonSQLBinomialRandom(unsigned long long &numFetches,
-                             unsigned long long &numHits) {
+void commonSQLBinomialRandom(const char *databaseName, int &numHits) {
   std::minstd_rand rng(0); // NOLINT(cert-msc51-cpp)
   std::binomial_distribution<int> dis(numRows - 1, 0.9);
 
   commonSQLRun<T>(
+      databaseName,
       [&](sqlite::Connection &conn) {
         for (int i = 0; i < 100; ++i) {
           conn.execute("SELECT b FROM T WHERE a = " + std::to_string(dis(rng)))
               .expect(SQLITE_OK);
         }
       },
-      numFetches, numHits);
+      numHits);
 }
 
 template <typename T> void commonAll() {
