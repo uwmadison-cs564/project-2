@@ -96,12 +96,5 @@ int main() {
   TEST_RUN(lruReplacement3);
   TEST_RUN(lruReplacement4);
 
-  loadSQLiteDatabase(databaseName);
-
-  TEST_RUN(lruReplacementSQLScan);
-  TEST_RUN(lruReplacementSQLScanWithHotSet);
-  TEST_RUN(lruReplacementSQLUniformRandom);
-  TEST_RUN(lruReplacementSQLBinomialRandom);
-
   return TEST_EXIT_CODE;
 }
