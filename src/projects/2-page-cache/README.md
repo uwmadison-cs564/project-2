@@ -57,8 +57,8 @@ The page is unpinned regardless of the number of prior fetches, meaning it can b
 
 - If `discard` is true, then discard the page.
 - If `discard` is false, examine the number of pages in the cache.
-	- If the number of pages in the cache is greater than or equal to the maximum, discard the page.
-	- If the number of pages in the cache is less than the maximum, do not discard the page.
+	- If the number of pages in the cache is greater than the maximum, discard the page.
+	- If the number of pages in the cache is less than or equal to the maximum, do not discard the page.
 
 This function should be $O(1)$.
 
